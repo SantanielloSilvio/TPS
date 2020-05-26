@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>PONG</title>
+
+    <style type="text/css">
+	<style>
+	html,body {
+		padding: 0;
+		margin: 0;
+	}
+	
+	.background {
+	  top: 0;
+	  left: 0;
+	  position: absolute;
+	  height: 450px;
+	  width: 560px;
+	  background-color: purple;
+	}
+	#left-paddle {
+		background-color: green;
+		left: 10px;
+	}
+
+	#right-paddle {
+		background-color: red;
+		left: 540px;
+	}
+
+	.paddle {
+		top: 0;
+		height: 100px;
+		width: 10px;
+		position: absolute;
+	}
+
+	.ball {
+		width: 15px;
+		height: 15px;
+		background-color: yellow;
+		border-radius: 10px;
+
+		position: absolute;
+		left: 50px;
+		top: 50px;
+	}
+
+	.score {
+		position: absolute;
+		top: 0;
+	}
+
+	#left-score {
+		left: 10%;
+	}
+
+	#right-score {
+		right: 75%;
+	}
+	</style>
+</head>
+
+<body>
+<div class="background"></div>
+<div class="paddle" id="left-paddle"></div>
+<div class="paddle" id="right-paddle"></div>
+<div class="ball" id="ball"></div>
+
+
+<h1 class="score" id="left-score">0</h1>
+<h1 class="score" id="right-score">0</h1>
+<script>
+	var worker;
+
+	var paddleLeft = document.getElementById('left-paddle');
+	var paddleRight = document.getElementById('right-paddle');
+	var ball = document.getElementById('ball');
+
+	var paddleSinistraSu = 0;
+	var paddleDestraSu = 0;
+	var paddleSinistraAlto = 100;
+	var paddleDestraAlto = 100;
+
+	var paddleDirezioneSinistra = 0;
+	var paddleTimerSinistra;
+
+	paddleLeft.style.top = 0;
+	paddleRight.style.top = 0;
+
+	var ballXPos = 200;
+	var ballYPos = 300;
+	var ballXDir = 5;
+	var ballYDir = 5;
+	var largezzBall = 10;
+	var altezzBall = 10;
+
+	var visualizzRisultSinistra = document.getElementById('left-score');
+	var visualizzRisultDestra = document.getElementById('right-score');
+	var punteggSinistra = 0;
+	var punteggDestra = 0;
+
+	function updateScoreDisplay() {
+		visualizzRisultSinistra.innerHTML = punteggSinistra;
+		visualizzRisultDestra.innerHTML = punteggDestra;
+	}
+
+	function moveBall() {
+		var nuovaBallXPos = ballXPos + ballXDir;
+		var nuovaBallYPos = ballYPos + ballYDir;
+
+		if (nuovaBallXPos + largezzBall > 540) {
+			ballXDir = -Math.abs(ballXDir);
+		}
+		if (nuovaBallYPos + altezzBall > 450) {
+			ballYDir = -Math.abs(ballYDir);
+		}
+		if (nuovaBallXPos < 4) {
+			ballXDir = Math.abs(ballXDir);
+		}
+		if (nuovaBallYPos < 0) {
+			ballYDir = Math.abs(ballYDir);
+		}
+
+		ballXPos += ballXDir;
+		ballYPos += ballYDir;
+
+		if (ballXPos < 10 && 
+			(ballYPos + 20 < paddleSinistraSu || 
+			 ballYPos > paddleSinistraSu + paddleSinistraAlto)) {
+			punteggDestra += 1;
+			updateScoreDisplay();
+		}
+		if (ballXPos + 10 > 540 + 10 && 
+			(ballYPos + 20 < paddleDestraSu || 
+			 ballYPos > paddleDestraSu + paddleDestraAlto)) {
+			punteggSinistra += 1;
+			updateScoreDisplay();
+		}
+		ball.style.top = ballYPos + 'px';
+		ball.style.left = ballXPos + 'px';
+		
+		
+	}
+	function moveRightPaddle(){
+		if (typeof(Worker) !== "undefined") {
+			if (typeof(worker) == "undefined") {
+				worker = new Worker("worker.js");
+				worker.postMessage({ "args": [ballXPos, ballYPos, paddleDestraSu] });
+			}
+			worker.onmessage = function(event) {
+				paddleRight.style.top = event.data + 'px';
+				worker.terminate();
+				worker = undefined;
+			};
+		} else {
+			document.getElementById("workerOutput").innerHTML = "Web Workers are not supported in your browser";
+		}	
+	}
+	
+
+	function moveLeftPaddle() {
+		paddleSinistraSu += paddleDirezioneSinistra;
+		paddleLeft.style.top = paddleSinistraSu + 'px';
+	}
+
+	setInterval(moveBall, 30);
+	setInterval(moveRightPaddle, 25);
+	
+	setInterval(function() {
+		if (ballXDir < 50) ballXDir *= 1.1;
+		if (ballYDir < 50) ballYDir *= 1.1;
+	}, 10000)
+
+	
+	
+	document.addEventListener('keydown', function(evt) {
+		switch (evt.code) {
+			case 'KeyS':
+				if (!paddleTimerSinistra) {
+					paddleDirezioneSinistra = 10;
+					paddleTimerSinistra = setInterval(moveLeftPaddle, 100);
+				}
+				break;
+
+			case 'KeyW':
+				if (!paddleTimerSinistra) {
+					paddleDirezioneSinistra = -10;
+					paddleTimerSinistra = setInterval(moveLeftPaddle, 100);
+				}
+				break;
+		}
+		console.log(evt);
+	})
+
+	document.addEventListener('keyup', function(evt) {
+		switch (evt.code) {
+			case 'KeyS':
+			case 'KeyW':
+				clearInterval(paddleTimerSinistra);
+				paddleTimerSinistra = null;
+				break;
+		}
+		console.log(evt);
+	})
+	
+</script>
+
+
+</body>
+
+</html>
+

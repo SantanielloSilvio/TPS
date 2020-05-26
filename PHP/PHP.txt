@@ -1,0 +1,2 @@
+sito realizzato da me e Meucci Leonardo durante lo stage. Esso permette di inserire dei commenti i quali vengono memorizzati sul database XAMPP (esportato nel file “commenti.txt”) e di leggerli successivamente.
+Il file per la scrittura dei commenti è “commenti.php”, mentre per la lettura dal database il codice è all’inizio della pagina “index.php”.
