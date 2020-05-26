@@ -1,0 +1,38 @@
+<html>
+<body>
+
+<p><b>Database persone:</b></p>
+
+<p>Nome:<span id="user"></span></p>
+<form>
+Username: <input type="text" id="user" onkeyup="Checkuser(this.value)">
+</form>
+
+<script>
+var nu='5';
+function Checkuser(str) {
+  if (str.length == 0) {
+    document.getElementById("user").innerHTML = "";
+    return;
+  } else {
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+	  if(this.responseText=='Username esistente'){
+			nu=this.responseText.slice(18,19);
+			document.getElementById("user").innerHTML = this.responseText.slice(0,18);
+		}
+		else{
+			document.getElementById("user").innerHTML = this.responseText;
+		}
+		
+      }
+    };
+    xmlhttp.open("GET", "getuser.php?q=" + str, true);
+    xmlhttp.send();
+  }
+}
+</script>
+
+</body>
+</html>
